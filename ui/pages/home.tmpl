@@ -2,10 +2,43 @@
 
 {{define "main"}}
     <h2>Generate Passphrase</h2>
-    <p>There's nothing to see here yet!</p>
-    <form action="/button-click" method="POST">
-                <button type="submit">5 Words</button>
+    <form action="/generate" method="POST">
+        <button type="submit" name="words" value="5">5 Words</button>
+        <button type="submit" name="words" value="6">6 Words</button>
+        <button type="submit" name="words" value="7">7 Words</button>
+        <button type="submit" name="words" value="8">8 Words</button>
     </form>
-    <p id="passphrase">{{.Passphrase}}</p>
+    <div class="button-group">
+        <p id="passphrase">{{.Passphrase}}</p>
+        {{if ne .Passphrase " "}}
+        <button onclick="copyToClipboard()">Copy</button>
+        <button onclick="addSpice()">+Spice</button>
+        {{end}}
+    </div>
     <p id="pwbits">{{.Entropy}}</p>
+
+    <script>
+        function copyToClipboard() {
+            const text = document.getElementById('passphrase').innerText;
+            navigator.clipboard.writeText(text).then(function() {
+                alert('Copied to clipboard!');
+            }, function(err) {
+                console.error('Could not copy text: ', err);
+            });
+        }
+
+        function addSpice() {
+            const specialChars = "!@#$%^&*()_+-=[]{}|;:,.<>?";
+            const char = specialChars[Math.floor(Math.random() * specialChars.length)];
+            const p = document.getElementById('passphrase');
+            let text = p.innerText;
+            
+            if (Math.random() < 0.5) {
+                text = char + text;
+            } else {
+                text = text + char;
+            }
+            p.innerText = text;
+        }
+    </script>
 {{end}}

@@ -17,7 +17,7 @@ func (app *application) home(w http.ResponseWriter, r *http.Request) {
 	app.render(w, http.StatusOK, "home.tmpl", &app.data)
 }
 
-func (app *application) gen5Words(w http.ResponseWriter, r *http.Request) {
+func (app *application) generate(w http.ResponseWriter, r *http.Request) {
 	if r.Method != "POST" {
 		app.clientError(w, http.StatusMethodNotAllowed)
 		return
@@ -26,8 +26,19 @@ func (app *application) gen5Words(w http.ResponseWriter, r *http.Request) {
 	// Use the cached wordlist
 	wordlist := app.wordlist
 
-	// Generate a passphrase with 5 words (recommended for high security)
+	// Generate a passphrase with n words
 	wordCount := 5
+	err := r.ParseForm()
+	if err == nil {
+		val := r.FormValue("words")
+		if val == "6" {
+			wordCount = 6
+		} else if val == "7" {
+			wordCount = 7
+		} else if val == "8" {
+			wordCount = 8
+		}
+	}
 
 	passphrase, err := generatePassphrase(wordlist, wordCount)
 	if err != nil {
