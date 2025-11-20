@@ -12,7 +12,7 @@ func (app *application) home(w http.ResponseWriter, r *http.Request) {
 	}
 
 	app.data.Passphrase = " "
-	app.data.Entropie = " "
+	app.data.Entropy = " "
 
 	app.render(w, http.StatusOK, "home.tmpl", &app.data)
 }
@@ -23,23 +23,20 @@ func (app *application) gen5Words(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// fmt.Println("Lade deutsche Diceware-Wortliste...")
+	// Use the cached wordlist
+	wordlist := app.wordlist
 
-	wordlist, err := loadWordlist()
-	if err != nil {
-		log.Fatalf("Fehler: %v", err)
-	}
-
-	// Generiere ein Passwort mit 5 Wörtern (empfohlen für hohe Sicherheit)
+	// Generate a passphrase with 5 words (recommended for high security)
 	wordCount := 5
 
 	passphrase, err := generatePassphrase(wordlist, wordCount)
 	if err != nil {
-		log.Fatalf("Fehler beim Generieren der Passphrase: %v", err)
+		app.serverError(w, err)
+		return
 	}
 
 	app.data.Passphrase = passphrase
-	app.data.Entropie = fmt.Sprintf("~%.1f Bits", float64(wordCount)*12.9)
+	app.data.Entropy = fmt.Sprintf("~%.1f Bits", float64(wordCount)*12.9)
 
 	app.render(w, http.StatusOK, "home.tmpl", &app.data)
 
