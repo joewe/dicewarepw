@@ -1,0 +1,11 @@
+{{define "title"}}Home{{end}}
+
+{{define "main"}}
+    <h2>Generate Passphrase</h2>
+    <p>There's nothing to see here yet!</p>
+    <form action="/button-click" method="POST">
+                <button type="submit">5 Words</button>
+    </form>
+    <p id="passphrase">{{.Passphrase}}</p>
+    <p id="pwbits">{{.Entropie}}</p>
+{{end}}
