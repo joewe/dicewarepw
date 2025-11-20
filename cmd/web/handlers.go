@@ -31,11 +31,12 @@ func (app *application) generate(w http.ResponseWriter, r *http.Request) {
 	err := r.ParseForm()
 	if err == nil {
 		val := r.FormValue("words")
-		if val == "6" {
+		switch val {
+		case "6":
 			wordCount = 6
-		} else if val == "7" {
+		case "7":
 			wordCount = 7
-		} else if val == "8" {
+		case "8":
 			wordCount = 8
 		}
 	}
