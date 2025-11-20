@@ -1,7 +1,7 @@
 {{define "title"}}Home{{end}}
 
 {{define "main"}}
-    <h2>Generate Passphrase</h2>
+    
     <form action="/generate" method="POST">
         <button type="submit" name="words" value="5">5 Words</button>
         <button type="submit" name="words" value="6">6 Words</button>
@@ -21,7 +21,12 @@
         function copyToClipboard() {
             const text = document.getElementById('passphrase').innerText;
             navigator.clipboard.writeText(text).then(function() {
-                alert('Copied to clipboard!');
+                const btn = document.querySelector('button[onclick="copyToClipboard()"]');
+                const originalText = btn.innerText;
+                btn.innerText = "Copied!";
+                setTimeout(() => {
+                    btn.innerText = originalText;
+                }, 2000);
             }, function(err) {
                 console.error('Could not copy text: ', err);
             });
