@@ -1,14 +1,15 @@
 package main
 
 import (
+	"io/fs"
 	"path/filepath"
 	"text/template"
 )
 
-func newTemplateCache() (map[string]*template.Template, error) {
+func newTemplateCache(uiFS fs.FS) (map[string]*template.Template, error) {
 	cache := map[string]*template.Template{}
 
-	pages, err := filepath.Glob("./ui/pages/*.tmpl")
+	pages, err := fs.Glob(uiFS, "pages/*.tmpl")
 	if err != nil {
 		return nil, err
 	}
@@ -17,13 +18,13 @@ func newTemplateCache() (map[string]*template.Template, error) {
 		name := filepath.Base(page)
 		// Create a slice containing the filepaths for the base template and partials and page
 		files := []string{
-			"./ui/base.tmpl",
-			"./ui/parts/nav.tmpl",
-			page,
+			"base.tmpl",
+			"parts/nav.tmpl",
+			"pages/" + name,
 		}
 
 		// Parse the files into template set
-		ts, err := template.ParseFiles(files...)
+		ts, err := template.ParseFS(uiFS, files...)
 		if err != nil {
 			return nil, err
 		}

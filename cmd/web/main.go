@@ -4,11 +4,15 @@ import (
 	"bufio"
 	"crypto/rand"
 	"fmt"
+	"io/fs"
 	"log"
 	"math/big"
 	"net/http"
+	"os"
 	"strings"
 	"text/template"
+
+	"dicewarepw/ui"
 )
 
 type application struct {
@@ -16,6 +20,7 @@ type application struct {
 	errorLog      *log.Logger
 	templateCache map[string]*template.Template
 	wordlist      map[string]string
+	uiFS          fs.FS
 	data          struct {
 		Passphrase string
 		Entropy    string
@@ -106,7 +111,7 @@ func main() {
 	infoLog := log.New(log.Writer(), "INFO\t", log.Ldate|log.Ltime)
 	errorLog := log.New(log.Writer(), "ERROR\t", log.Ldate|log.Ltime|log.Lshortfile)
 
-	templateCache, err := newTemplateCache()
+	templateCache, err := newTemplateCache(ui.Files)
 	if err != nil {
 		errorLog.Fatal(err)
 	}
@@ -121,10 +126,17 @@ func main() {
 		errorLog:      errorLog,
 		templateCache: templateCache,
 		wordlist:      wordlist,
+		uiFS:          ui.Files,
 	}
 
+	port := "4000"
+	if envPort := os.Getenv("PORT"); envPort != "" {
+		port = envPort
+	}
+	addr := "0.0.0.0:" + port // uberspace needs 0.0.0.0
+
 	srv := &http.Server{
-		Addr:     ":4000",
+		Addr:     addr,
 		ErrorLog: errorLog,
 		Handler:  app.routes(),
 	}
