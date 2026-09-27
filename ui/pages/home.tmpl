@@ -1,21 +1,141 @@
-{{define "title"}}Home{{end}}
+{{define "title"}}Generator{{end}}
 
 {{define "main"}}
-    
-    <form action="/generate" method="POST">
-        <button type="submit" name="words" value="5">5 Words</button>
-        <button type="submit" name="words" value="6">6 Words</button>
-        <button type="submit" name="words" value="7">7 Words</button>
-        <button type="submit" name="words" value="8">8 Words</button>
-    </form>
-    <div class="button-group">
-        <p id="passphrase">{{.Passphrase}}</p>
-        {{if ne .Passphrase " "}}
-        <button onclick="copyToClipboard()">Copy</button>
-        <button onclick="addSpice()">+ 🌶️</button>
+    <section class="generator-section">
+        <div class="section-header">
+            <span class="section-label">Länge der Passphrase</span>
+            <span class="section-hint">Klicke zum Generieren</span>
+        </div>
+
+        <form action="/generate" method="POST" class="words-form">
+            <button type="submit" name="words" value="5" class="word-card-btn" id="btn-5-words">
+                <div class="btn-dice-count">5</div>
+                <div class="btn-meta">
+                    <span class="btn-title">5 Wörter</span>
+                    <span class="btn-entropy">~64.5 Bits</span>
+                    <span class="btn-badge badge-standard">Standard</span>
+                </div>
+            </button>
+
+            <button type="submit" name="words" value="6" class="word-card-btn" id="btn-6-words">
+                <div class="btn-dice-count">6</div>
+                <div class="btn-meta">
+                    <span class="btn-title">6 Wörter</span>
+                    <span class="btn-entropy">~77.4 Bits</span>
+                    <span class="btn-badge badge-strong">Stark</span>
+                </div>
+            </button>
+
+            <button type="submit" name="words" value="7" class="word-card-btn" id="btn-7-words">
+                <div class="btn-dice-count">7</div>
+                <div class="btn-meta">
+                    <span class="btn-title">7 Wörter</span>
+                    <span class="btn-entropy">~90.3 Bits</span>
+                    <span class="btn-badge badge-very-strong">Sehr stark</span>
+                </div>
+            </button>
+
+            <button type="submit" name="words" value="8" class="word-card-btn" id="btn-8-words">
+                <div class="btn-dice-count">8</div>
+                <div class="btn-meta">
+                    <span class="btn-title">8 Wörter</span>
+                    <span class="btn-entropy">~103.2 Bits</span>
+                    <span class="btn-badge badge-extreme">Maximal</span>
+                </div>
+            </button>
+        </form>
+    </section>
+
+    <section class="result-section">
+        {{if and (ne .Passphrase " ") (ne .Passphrase "")}}
+            <div class="passphrase-panel active">
+                <div class="passphrase-header">
+                    <span class="panel-label">Generierte Passphrase</span>
+                    <span class="live-indicator"><span class="dot"></span> Aktiv</span>
+                </div>
+
+                <div class="passphrase-display">
+                    <p id="passphrase">{{.Passphrase}}</p>
+                </div>
+
+                <div class="action-buttons-group">
+                    <button type="button" class="btn-action btn-copy" id="btn-copy" onclick="copyToClipboard()" title="In Zwischenablage kopieren">
+                        <svg class="action-icon copy-icon" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+                            <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+                        </svg>
+                        <span class="action-text">Kopieren</span>
+                    </button>
+
+                    <button type="button" class="btn-action btn-spice" id="btn-spice" onclick="addSpice()" title="Zufälliges Sonderzeichen anfügen/entfernen">
+                        <span class="chili-icon">🌶️</span>
+                        <span class="action-text">+ Sonderzeichen</span>
+                    </button>
+                </div>
+
+                <div class="security-card">
+                    <div class="security-info">
+                        <span class="security-title">Sicherheit &amp; Entropie:</span>
+                        <span id="pwbits" class="security-bits">{{.Entropy}}</span>
+                    </div>
+                    <div class="meter-track">
+                        <div class="meter-bar" id="entropy-meter-bar"></div>
+                    </div>
+                    <div class="security-footer">
+                        <span class="shield-badge">🛡️ Extrem widerstandsfähig gegen Brute-Force &amp; Wörterbuchangriffe</span>
+                    </div>
+                </div>
+            </div>
+        {{else}}
+            <div class="passphrase-panel empty-state">
+                <div class="empty-icon-wrap">
+                    <span class="rolling-dice">🎲</span>
+                </div>
+                <h3>Bereit zum Würfeln</h3>
+                <p class="empty-hint">Wähle oben die gewünschte Wortanzahl aus, um deine Passphrase aus der deutschen Diceware-Wortliste zu generieren.</p>
+                <p id="passphrase" class="hidden-passphrase" style="display: none;"></p>
+                <p id="pwbits" style="display: none;"></p>
+            </div>
         {{end}}
-    </div>
-    <p id="pwbits">{{.Entropy}}</p>
+    </section>
 
-
+    <section class="explainer-section">
+        <details class="explainer-card">
+            <summary class="explainer-summary">
+                <span class="explainer-summary-title">
+                    <span class="info-symbol">💡</span> Warum Diceware-Passphrasen?
+                </span>
+                <span class="chevron-arrow">▾</span>
+            </summary>
+            <div class="explainer-body">
+                <p>
+                    Klassische Passwörter wie <code>Tr0ub4dor&3</code> sind schwer zu merken und trotzdem leicht von Computern zu knacken.
+                    <strong>Diceware</strong> nutzt das bewährte Konzept des echten Zufalls: Jedes Wort wird durch fünf sechsseitige Würfelwürfe bestimmt.
+                </p>
+                <div class="explainer-features">
+                    <div class="feature-item">
+                        <span class="feature-icon">🧠</span>
+                        <div>
+                            <strong>Merkbar für Menschen</strong>
+                            <p>Echte Wörter formen eine Geschichte oder visuelle Vorstellung im Kopf.</p>
+                        </div>
+                    </div>
+                    <div class="feature-item">
+                        <span class="feature-icon">🔒</span>
+                        <div>
+                            <strong>Mathematische Härte</strong>
+                            <p>Bereits 6 Wörter bieten ~77 Bits Entropie – offline unknackbar.</p>
+                        </div>
+                    </div>
+                    <div class="feature-item">
+                        <span class="feature-icon">⚡</span>
+                        <div>
+                            <strong>Volle Privatsphäre</strong>
+                            <p>Die Generierung erfolgt flüchtig im Arbeitsspeicher des Servers.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </details>
+    </section>
 {{end}}
