@@ -5,7 +5,7 @@ import (
 	"net/http"
 )
 
-func (app *application) routes() *http.ServeMux {
+func (app *application) routes() http.Handler {
 	mux := http.NewServeMux()
 	mux.HandleFunc("/", app.home)
 	mux.HandleFunc("/generate", app.generate)
@@ -18,5 +18,5 @@ func (app *application) routes() *http.ServeMux {
 	fileServer := http.FileServer(http.FS(staticFS))
 	mux.Handle("/static/", http.StripPrefix("/static", fileServer))
 
-	return mux
+	return secureHeaders(mux)
 }

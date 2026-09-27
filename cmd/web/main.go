@@ -3,6 +3,7 @@ package main
 import (
 	"bufio"
 	"crypto/rand"
+	_ "embed"
 	"fmt"
 	"io/fs"
 	"log"
@@ -11,9 +12,13 @@ import (
 	"os"
 	"strings"
 	"text/template"
+	"time"
 
 	"dicewarepw/ui"
 )
+
+//go:embed wordlist-german-diceware.txt
+var wordlistContent string
 
 type application struct {
 	infoLog       *log.Logger
@@ -21,28 +26,12 @@ type application struct {
 	templateCache map[string]*template.Template
 	wordlist      map[string]string
 	uiFS          fs.FS
-	data          struct {
-		Passphrase string
-		Entropy    string
-	}
 }
 
-const wordlistURL = "https://raw.githubusercontent.com/bjoernalbers/diceware-wordlist-german/refs/heads/main/wordlist-german-diceware.txt"
-
-// loadWordlist loads the Diceware wordlist from GitHub
+// loadWordlist parses the embedded German Diceware wordlist
 func loadWordlist() (map[string]string, error) {
-	resp, err := http.Get(wordlistURL)
-	if err != nil {
-		return nil, fmt.Errorf("error loading wordlist: %v", err)
-	}
-	defer resp.Body.Close()
-
-	if resp.StatusCode != http.StatusOK {
-		return nil, fmt.Errorf("HTTP error: %s", resp.Status)
-	}
-
-	wordlist := make(map[string]string)
-	scanner := bufio.NewScanner(resp.Body)
+	wordlist := make(map[string]string, 7776)
+	scanner := bufio.NewScanner(strings.NewReader(wordlistContent))
 
 	for scanner.Scan() {
 		line := scanner.Text()
@@ -107,7 +96,6 @@ func generatePassphrase(wordlist map[string]string, wordCount int) (string, erro
 }
 
 func main() {
-
 	infoLog := log.New(log.Writer(), "INFO\t", log.Ldate|log.Ltime)
 	errorLog := log.New(log.Writer(), "ERROR\t", log.Ldate|log.Ltime|log.Lshortfile)
 
@@ -136,13 +124,15 @@ func main() {
 	addr := "0.0.0.0:" + port // uberspace needs 0.0.0.0
 
 	srv := &http.Server{
-		Addr:     addr,
-		ErrorLog: errorLog,
-		Handler:  app.routes(),
+		Addr:         addr,
+		ErrorLog:     errorLog,
+		Handler:      app.routes(),
+		IdleTimeout:  time.Minute,
+		ReadTimeout:  5 * time.Second,
+		WriteTimeout: 10 * time.Second,
 	}
 
 	infoLog.Printf("Starting server on %s", srv.Addr)
 	err = srv.ListenAndServe()
 	errorLog.Fatal(err)
-
 }

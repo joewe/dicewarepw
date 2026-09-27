@@ -11,10 +11,12 @@ func (app *application) home(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	app.data.Passphrase = " "
-	app.data.Entropy = " "
+	data := templateData{
+		Passphrase: " ",
+		Entropy:    " ",
+	}
 
-	app.render(w, http.StatusOK, "home.tmpl", &app.data)
+	app.render(w, http.StatusOK, "home.tmpl", &data)
 }
 
 func (app *application) generate(w http.ResponseWriter, r *http.Request) {
@@ -47,9 +49,10 @@ func (app *application) generate(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	app.data.Passphrase = passphrase
-	app.data.Entropy = fmt.Sprintf("~%.1f Bits", float64(wordCount)*12.9)
+	data := templateData{
+		Passphrase: passphrase,
+		Entropy:    fmt.Sprintf("~%.1f Bits", float64(wordCount)*12.9),
+	}
 
-	app.render(w, http.StatusOK, "home.tmpl", &app.data)
-
+	app.render(w, http.StatusOK, "home.tmpl", &data)
 }

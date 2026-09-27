@@ -1,5 +1,7 @@
 # Binaries
 dicewarepw
+dicewarepw-linux
+bin/
 *.exe
 *.exe~
 *.dll
@@ -20,3 +22,4 @@ dicewarepw
 Thumbs.db
 # misc
 DEPLOY.md
+dicewarepw_

@@ -6,6 +6,11 @@ import (
 	"text/template"
 )
 
+type templateData struct {
+	Passphrase string
+	Entropy    string
+}
+
 func newTemplateCache(uiFS fs.FS) (map[string]*template.Template, error) {
 	cache := map[string]*template.Template{}
 
